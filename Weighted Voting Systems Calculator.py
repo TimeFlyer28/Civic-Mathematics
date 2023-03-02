@@ -111,16 +111,16 @@ def printList(list):
 
 '''Voting System (Edit these)'''
 
-a = player("A", 30)
-b = player("B", 28)
-c = player("C", 22)
-d = player("D", 15)
-e = player("E", 7)
-f = player("F", 6)
+quota = 17
 
-playerList = [a,b,c,d,e,f]
-quota = 65
-
+playerList = [
+    player("A", 13),
+    player("B", 9),
+    player("C", 7),
+    player("D", 2),
+    # player("E", 1),
+    # player("F", 1),
+]
 
 
 
