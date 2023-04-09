@@ -3,6 +3,7 @@ Redisctricting Project
 Anish Reddy
 """
 import DistrictArrays as DA
+import WeightedVotingSystemsCalculator as WVS
 
 
 
@@ -14,47 +15,60 @@ class Squareville:
     map =  [[0 for i in range(10)] for j in range(10)]
 
     # census realted data
-    census = 0
+    population = 0
     RDI = [0,0,0]
     KLMN = [0,0,0,0]
 
-
-    def __init__(this, pop, affil, coi, district, loc):
-        this.pop = pop
-        this.affil = affil
-        this.coi = coi
-        this.district = district
-        this.loc = loc
+    def __init__(this, cPop, cAffil, cCOI, cDistrict, cLoc):
+        this.cPop = cPop
+        this.cAffil = cAffil
+        this.cCOI = cCOI
+        this.cDistrict = cDistrict
+        this.cLoc = cLoc
 
         # Commands to run
-        Squareville.map[this.loc[0]][this.loc[1]] = this
-        this.updateCensusInfo()
-        District.listOfDistricts[district].add(this)
+        Squareville.map[this.cLoc[0]][this.cLoc[1]] = this
+        this.updateSquarevilleInfo()
+        District.listOfDistricts[cDistrict].add(this)
 
     # Updates census realted data
-    def updateCensusInfo(this):
-        Squareville.census += this.pop
-        if this.affil == "R":
-            Squareville.RDI[0]+=this.pop
-        elif this.affil == "D":
-            Squareville.RDI[1]+=this.pop
-        elif this.affil == "I":
-            Squareville.RDI[2]+=this.pop
-        if this.coi == "K":
-            Squareville.KLMN[0]+=this.pop
-        elif this.coi == "L":
-            Squareville.KLMN[1]+=this.pop
-        elif this.coi == "M":
-            Squareville.KLMN[2]+=this.pop
-        elif this.coi == "N":
-            Squareville.KLMN[3]+=this.pop
+    def updateSquarevilleInfo(this):
+        Squareville.population += this.cPop
+        match this.cAffil:
+            case "R":
+                Squareville.RDI[0]+=this.cPop
+            case "D":
+                Squareville.RDI[1]+=this.cPop
+            case "I":
+                Squareville.RDI[2]+=this.cPop
+        match this.cCOI:
+            case "K":
+                Squareville.KLMN[0]+=this.cPop
+            case "L":
+                Squareville.KLMN[1]+=this.cPop
+            case "M":
+                Squareville.KLMN[2]+=this.cPop
+            case "N":
+                Squareville.KLMN[3]+=this.cPop
 
+    def getOverallPartyPercent():
+        return [round(val/Squareville.population*100,2) for val in Squareville.RDI]
     
+    def getOverallCOIPercent():
+        return [round(val/Squareville.population*100,2) for val in Squareville.KLMN]
+
+    def getOverallPartyBPI():
+        return WVS.getBPI(Squareville.RDI)
+    
+    def getOverallCOIBPI():
+        return WVS.getBPI(Squareville.KLMN)
+
+
     def __repr__(this):
-        return f"{this.affil}{this.coi}{this.pop}-{this.district}"
+        return f"{this.cAffil}{this.cCOI}{this.cPop}-{this.cDistrict}"
     
     def __str__(this) -> str:
-        return f"{this.affil}{this.coi}{this.pop}-{this.district}"
+        return f"{this.cAffil}{this.cCOI}{this.cPop}-{this.cDistrict}"
     
 
 
@@ -62,13 +76,19 @@ class District:
     
     listOfDistricts = [None]
 
+    # Assuming each district has 1 vote based on plurality (bc representative)
+    RDI = None
+    KLMN = None
+
     def __init__(this):
         District.listOfDistricts.append(this)
 
         this.withinDistrict = []
-        this.pop = 0
-        this.RDI = [0,0,0]
-        this.KLMN = [0,0,0,0]
+        this.dPop = 0
+        this.dRDI = [0,0,0]
+        this.dKLMN = [0,0,0,0]
+        this.dAffil = None
+        this.dCOI = None
 
         this.minR = None
         this.maxR = None
@@ -78,31 +98,50 @@ class District:
     # Adds a Squarevill cell to the district
     def add(this, cell):
         this.withinDistrict.append(cell)
-        this.updateCensusInfo(cell)
-        this.updateMixMax(cell)
+        this.updateDistrictInfo(cell)
+        District.updateRepresentation()
 
-    # Updates census realted data
-    def updateCensusInfo(this, cell):
-        this.pop += cell.pop
-        if cell.affil == "R":
-            this.RDI[0]+=cell.pop
-        elif cell.affil == "D":
-            this.RDI[1]+=cell.pop
-        elif cell.affil == "I":
-            this.RDI[2]+=cell.pop
-        if cell.coi == "K":
-            this.KLMN[0]+=cell.pop
-        elif cell.coi == "L":
-            this.KLMN[1]+=cell.pop
-        elif cell.coi == "M":
-            this.KLMN[2]+=cell.pop
-        elif cell.coi == "N":
-            this.KLMN[3]+=cell.pop
+    # Updates district realted data
+    def updateDistrictInfo(this, cell):
+        this.dPop += cell.cPop
+        match cell.cAffil:
+            case "R":
+                this.dRDI[0]+=cell.cPop
+            case "D":
+                this.dRDI[1]+=cell.cPop
+            case "I":
+                this.dRDI[2]+=cell.cPop
+        match cell.cCOI:
+            case "K":
+                this.dKLMN[0]+=cell.cPop
+            case "L":
+                this.dKLMN[1]+=cell.cPop
+            case "M":
+                this.dKLMN[2]+=cell.cPop
+            case "N":
+                this.dKLMN[3]+=cell.cPop
+        
+        # Sets affiliation of the district
+        if this.dRDI[0] > this.dRDI[1] and this.dRDI[0] > this.dRDI[2]:
+            this.dAffil = "R"
+        elif this.dRDI[1] > this.dRDI[0] and this.dRDI[1] > this.dRDI[2]:
+            this.dAffil = "D"
+        elif this.dRDI[2] > this.dRDI[0] and this.dRDI[2] > this.dRDI[1]:
+           this.dAffil = "I"
 
-    # Update min and max R and C
-    def updateMixMax(this, cell):
-        r = cell.loc[0]
-        c = cell.loc[1]
+        # Sets COI of the district
+        if this.dKLMN[0] > this.dKLMN[1] and this.dKLMN[0] > this.dKLMN[2] and this.dKLMN[0] > this.dKLMN[3]:
+            this.dCOI = "K"
+        elif this.dKLMN[1] > this.dKLMN[0] and this.dKLMN[1] > this.dKLMN[2] and this.dKLMN[1] > this.dKLMN[3]:
+            this.dCOI = "L"
+        elif this.dKLMN[2] > this.dKLMN[0] and this.dKLMN[2] > this.dKLMN[1] and this.dKLMN[2] > this.dKLMN[3]:
+            this.dCOI = "M"
+        elif this.dKLMN[3] > this.dKLMN[0] and this.dKLMN[3] > this.dKLMN[1] and this.dKLMN[3] > this.dKLMN[2]:
+            this.dCOI = "N"
+
+        # Update min and max R and C
+        r = cell.cLoc[0]
+        c = cell.cLoc[1]
         if this.minR == None:
             this.minR = r
             this.maxR = r
@@ -117,6 +156,37 @@ class District:
                 this.minC = c
             elif c > this.maxC:
                 this.maxC = c
+        
+    # Updates the Overall Representation
+    def updateRepresentation():
+        District.RDI = [0,0,0]
+        District.KLMN = [0,0,0,0]
+        for i in range(1,8):
+            j = District.listOfDistricts[i]
+            match j.dAffil:
+                case "R":
+                    District.RDI[0]+=1
+                case "D":
+                    District.RDI[1]+=1
+                case "I":
+                    District.RDI[2]+=1
+            match j.dCOI:
+                case "K":
+                    District.KLMN[0]+=1
+                case "L":
+                    District.KLMN[1]+=1
+                case "M":
+                    District.KLMN[2]+=1
+                case "N":
+                    District.KLMN[3]+=1
+
+    
+    # Each District Check
+    def checkDPop(this):
+        if this.dPop>41 or this.dPop<34:
+            return False
+        else:
+            return True
 
     def getReockScore(this):
         area = len(this.withinDistrict)
@@ -125,6 +195,26 @@ class District:
         else:
             minSquareSide = this.maxC-this.minC+1
         return area/(minSquareSide*minSquareSide)
+    
+    # Overall Check
+    def averageReockScore():
+        sum=0
+        for i in range(1,8):
+            sum += District.listOfDistricts[i].getReockScore()
+        return sum/7
+    
+    def getPartyPercent():
+        return [round(val/7*100,2) for val in District.RDI]
+
+    def getCOIPercent():
+        return [round(val/7*100,2) for val in District.KLMN]
+
+    def getPartyBPI():
+        return WVS.getBPI(District.RDI)
+
+    def getCOIBPI():
+        return WVS.getBPI(District.KLMN)
+                
 
     def __repr__(this):
         return this.withinDistrict
@@ -148,7 +238,7 @@ for row in range(10):
         a = DA.population[row][col]
         b = DA.affiliation[row][col]
         c = DA.demographic[row][col]
-        d = DA.district[row][col]
+        d = DA.districtAssignments[row][col]
         e = (row, col)
         Squareville(a,b,c,d,e)
 
@@ -160,19 +250,27 @@ for i in Squareville.map:
     for j in i:
         print(j, end="\t")
     print()
-print()
+print("\n")
 
 
 # prints the info for each district
-print("The District\tPopulation\tR/D/I\t\t\tK/L/M/N\t\t\tReock Score")
+print("The District\tPopulation\tR/D/I\t\t\tK/L/M/N\t\t\tReock Score\tAffiliation\tCOI")
+print("------------------------------------------------------------------------------------------------------------------------")
 for i in range(1,8):
     print(f"District {i}", end="\t")
     x = District.listOfDistricts[i]
-    print(f"{x.pop}\t\t{x.RDI}\t\t{x.KLMN}\t\t{x.getReockScore()}")
+    print(f"{x.dPop},{x.checkDPop()}\t\t{x.dRDI}\t\t{x.dKLMN}\t\t{round(x.getReockScore(),4)}\t\t{x.dAffil}\t\t{x.dCOI}")
     print()
+print()
 
-# print(Squareville.census)
-# print(District.listOfDistricts[1])
+
+print(f"Average Reock Score of Compactness: {round(District.averageReockScore(),4)}\n")
+print(f"Party Power Comparison:")
+print(f"Overall:\t%R/D/I={Squareville.getOverallPartyPercent()}\tR/D/I-BPI={Squareville.getOverallPartyBPI()}")
+print(f"Overall:\t%R/D/I={District.getPartyPercent()}\tR/D/I-BPI={District.getPartyBPI()}\n")
+print(f"COI Power Comparison:")
+print(f"Overall:\t%K/L/M/N={Squareville.getOverallCOIPercent()}\tK/L/M/N-BPI={Squareville.getOverallCOIBPI()}")
+print(f"Overall:\t%K/L/M/N={District.getCOIPercent()}\tK/L/M/N-BPI={District.getCOIBPI()}\n")
 
 
     
