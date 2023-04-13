@@ -266,11 +266,11 @@ print()
 
 print(f"Average Reock Score of Compactness: {round(District.averageReockScore(),4)}\n")
 print(f"Party Power Comparison:")
-print(f"Overall:\t%R/D/I={Squareville.getOverallPartyPercent()}\tR/D/I-BPI={Squareville.getOverallPartyBPI()}")
-print(f"Overall:\t%R/D/I={District.getPartyPercent()}\tR/D/I-BPI={District.getPartyBPI()}\n")
+print(f"Overall:\tR/D/I={Squareville.RDI}\t%R/D/I={Squareville.getOverallPartyPercent()}\tR/D/I-BPI={Squareville.getOverallPartyBPI()}")
+print(f"Districts:\tR/D/I={District.RDI}    \t%R/D/I={District.getPartyPercent()}\tR/D/I-BPI={District.getPartyBPI()}\n")
 print(f"COI Power Comparison:")
-print(f"Overall:\t%K/L/M/N={Squareville.getOverallCOIPercent()}\tK/L/M/N-BPI={Squareville.getOverallCOIBPI()}")
-print(f"Overall:\t%K/L/M/N={District.getCOIPercent()}\tK/L/M/N-BPI={District.getCOIBPI()}\n")
+print(f"Overall:\tK/L/M/N={Squareville.KLMN}\t%K/L/M/N={Squareville.getOverallCOIPercent()}\tK/L/M/N-BPI={Squareville.getOverallCOIBPI()}")
+print(f"Districts:\tK/L/M/N={District.KLMN}    \t%K/L/M/N={District.getCOIPercent()}\tK/L/M/N-BPI={District.getCOIBPI()}\n")
 
 
     
